@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest a new step type, module, or command
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to set up or change?
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: How could it look in tweed.yaml?
+      render: yaml
+  - type: textarea
+    id: manual
+    attributes:
+      label: How do you do it manually today?
+      description: Shell commands help define the step and its "already done" check.
+      render: shell

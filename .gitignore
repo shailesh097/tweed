@@ -1,0 +1,14 @@
+# Build output
+/bin/
+/dist/
+/tweed
+
+# Test / coverage
+*.out
+coverage.html
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

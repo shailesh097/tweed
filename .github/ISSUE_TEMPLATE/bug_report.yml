@@ -1,0 +1,36 @@
+name: Bug report
+description: Something did not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you run, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: Paste the relevant output. `tweed apply ... --dry-run` output helps a lot.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: tweed version
+      placeholder: output of `tweed version`
+    validations:
+      required: true
+  - type: input
+    id: fedora
+    attributes:
+      label: Fedora version and edition
+      placeholder: e.g. Fedora 44 Workstation
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: "`tweed doctor` output"
+      render: text

@@ -1,0 +1,106 @@
+# tweed.yaml: what tweed sets up.
+#
+#   tweed list                                   # show profiles and modules
+#   tweed apply --profile workstation --dry-run  # preview
+#   tweed apply -m dev,apps                      # apply specific modules
+#
+# Step order inside a module: dnf_config → repos → dnf → flatpak → gsettings → commands
+# Everything is idempotent: steps that are already done are skipped.
+# Requires Fedora 41+ (dnf5).
+
+profiles:
+  workstation:        [base, shell, desktop, dev, apps, nvidia]
+  workstation-no-gpu: [base, shell, desktop, dev, apps]
+  server:             [base, shell]
+
+modules:
+  base:
+    description: Core CLI tools, dnf tuning, RPM Fusion and Flathub
+    dnf_config:
+      defaultyes: "True"
+      max_parallel_downloads: "10"
+    repos:
+      - builtin: rpmfusion-free
+      - builtin: rpmfusion-nonfree
+      - builtin: flathub
+    dnf: [curl, wget, git, neovim, fzf, btop, nvtop, fastfetch, zoxide, tldr, eza, npm, rsync, unzip, make]
+    commands:
+      - name: create ~/Workspace
+        run: mkdir -p "$HOME/Workspace"
+        unless: test -d "$HOME/Workspace"
+      - name: git identity
+        run: git config --global user.name "shailesh097" && git config --global user.email "sailesh.pokharel.234@gmail.com"
+        unless: git config --global user.email >/dev/null
+
+  shell:
+    description: fish shell and Starship prompt
+    repos:
+      - copr: atim/starship
+    dnf: [fish, starship]
+    commands:
+      - name: set fish as login shell
+        run: sudo chsh -s /usr/bin/fish "$USER"
+        unless: getent passwd "$USER" | grep -q '/usr/bin/fish$'
+
+  desktop:
+    description: GNOME tweaks, extensions from Fedora repos, power settings, kitty
+    dnf:
+      - gnome-tweaks
+      - gnome-shell-extension-user-theme
+      - gnome-shell-extension-caffeine
+      - gnome-shell-extension-appindicator
+      - gnome-shell-extension-workspace-indicator
+      - kitty
+      - conky
+      - xdotool
+    flatpak: [com.mattjakeman.ExtensionManager]
+    gsettings:
+      - schema: org.gnome.desktop.wm.preferences
+        key: button-layout
+        value: appmenu:minimize,maximize,close
+      - schema: org.gnome.desktop.session      # screen off after 15 min
+        key: idle-delay
+        value: "900"
+      - schema: org.gnome.settings-daemon.plugins.power
+        key: sleep-inactive-ac-type
+        value: nothing
+      - schema: org.gnome.settings-daemon.plugins.power
+        key: power-button-action
+        value: nothing
+    commands:
+      - name: kitty Catppuccin-Mocha theme
+        run: kitty +kitten themes --reload-in=all Catppuccin-Mocha
+        unless: test -f "$HOME/.config/kitty/current-theme.conf"
+
+  dev:
+    description: Editors (VS Code, Sublime Text, NvChad)
+    repos:
+      - id: vscode
+        name: Visual Studio Code
+        baseurl: https://packages.microsoft.com/yumrepos/vscode
+        gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+      - repofile: https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo
+    dnf: [code, sublime-text]
+    commands:
+      - name: NvChad starter config
+        run: git clone https://github.com/NvChad/starter "$HOME/.config/nvim"
+        unless: test -d "$HOME/.config/nvim"
+
+  apps:
+    description: Desktop applications
+    repos:
+      - repofile: https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+    dnf: [brave-browser, discord, vlc, gparted, rawtherapee]
+    flatpak:
+      - com.spotify.Client
+      - md.obsidian.Obsidian
+      - us.pixls.art.ART
+      - org.localsend.localsend_app
+
+  nvidia:
+    description: NVIDIA proprietary driver (akmod). Reboot afterwards.
+    dnf: [akmod-nvidia, xorg-x11-drv-nvidia-cuda]
+
+  x11:
+    description: GNOME X11 session (not available on recent Fedora; kept for older releases)
+    dnf: [gnome-session-xsession, gnome-classic-session-xsession]
