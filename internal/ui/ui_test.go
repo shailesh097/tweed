@@ -7,13 +7,17 @@ import (
 )
 
 func TestConfirm(t *testing.T) {
-	for in, want := range map[string]bool{
-		"y\n": true, "YES\n": true, " yes \n": true,
-		"n\n": false, "\n": false, "": false, "maybe\n": false,
-	} {
+	tests := []struct {
+		in   string
+		want bool
+	}{
+		{"y\n", true}, {"YES\n", true}, {"  yes  \n", true},
+		{"n\n", false}, {"\n", false}, {"", false}, {"maybe\n", false},
+	}
+	for _, tt := range tests {
 		var out bytes.Buffer
-		if got := Confirm(strings.NewReader(in), &out, "Continue?"); got != want {
-			t.Errorf("Confirm(%q) = %v, want %v", in, got, want)
+		if got := Confirm(strings.NewReader(tt.in), &out, "Continue?"); got != tt.want {
+			t.Errorf("Confirm(%q) = %v, want %v", tt.in, got, tt.want)
 		}
 	}
 }

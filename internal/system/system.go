@@ -25,7 +25,7 @@ func ReadOSRelease() (OSRelease, error) {
 	if err != nil {
 		return OSRelease{}, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	return ParseOSRelease(f)
 }
 
