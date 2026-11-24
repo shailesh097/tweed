@@ -22,6 +22,13 @@ jobs:
         run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
       - run: go vet ./...
       - run: go test -race -cover ./...
+      - name: Build binary
+        run: make build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tweed-linux-amd64
+          path: bin/tweed
+          if-no-files-found: error
 
   lint:
     runs-on: ubuntu-latest
