@@ -173,7 +173,7 @@ type coprStep struct{ project string } // "owner/project"
 
 func (s *coprStep) Describe() string { return "repo: COPR " + s.project }
 
-func (s *coprStep) Check(ctx context.Context, r runner.Runner) (bool, error) {
+func (s *coprStep) Check(context.Context, runner.Runner) (bool, error) {
 	owner, proj, _ := strings.Cut(s.project, "/")
 	name := fmt.Sprintf("_copr:copr.fedorainfracloud.org:%s:%s.repo", owner, proj)
 	return fileExists(filepath.Join(ReposDir, name)), nil

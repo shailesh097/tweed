@@ -22,8 +22,10 @@ type FakeResponse struct {
 // ErrNoResponse is returned for queries without a canned response.
 var ErrNoResponse = errors.New("fake: no response configured")
 
+// DryRun reports the configured Dry value.
 func (f *Fake) DryRun() bool { return f.Dry }
 
+// Query returns the canned response for c, or ErrNoResponse.
 func (f *Fake) Query(_ context.Context, c Cmd) (string, error) {
 	if r, ok := f.Responses[c.String()]; ok {
 		return r.Out, r.Err
@@ -31,6 +33,7 @@ func (f *Fake) Query(_ context.Context, c Cmd) (string, error) {
 	return "", ErrNoResponse
 }
 
+// Run records c in Ran and always succeeds.
 func (f *Fake) Run(_ context.Context, c Cmd) error {
 	f.Ran = append(f.Ran, c.String())
 	return nil
