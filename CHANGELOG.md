@@ -4,6 +4,7 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+## [0.2.0] - 2026-11-25
 
 ### Added
 - Go rewrite of [fedora_tweed](https://github.com/shailesh097/fedora_tweed): declarative `tweed.yaml` with profiles and modules
