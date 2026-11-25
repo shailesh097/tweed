@@ -16,8 +16,8 @@ Each milestone below maps to a **GitHub milestone**; each bullet is an **issue**
 - [x] CLI: `apply`, `list`, `doctor`, `init`, `version`
 - [x] Default config ported from fedora_tweed, embedded in the binary
 - [x] CI (test, lint, Fedora container dry-run), GoReleaser, install script
-- [ ] Create GitHub repo, labels, milestones; push; tag `v0.2.0`
-- [ ] First real run in a Fedora 44 VM; fix whatever breaks
+- [x] Create GitHub repo, labels, milestones; push; tag `v0.2.0`
+- [x] First real run in a Fedora 44 VM; fix whatever breaks
 
 ## v0.3.0: GNOME desktop
 
