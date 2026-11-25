@@ -60,7 +60,7 @@ modules:
         value: appmenu:minimize,maximize,close
       - schema: org.gnome.desktop.session      # screen off after 15 min
         key: idle-delay
-        value: "900"
+        value: "500"
       - schema: org.gnome.settings-daemon.plugins.power
         key: sleep-inactive-ac-type
         value: nothing
