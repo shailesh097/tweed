@@ -18,8 +18,8 @@ var ctx = context.Background()
 
 func TestDNFPackagesOnlyInstallsMissing(t *testing.T) {
 	f := &runner.Fake{Responses: map[string]runner.FakeResponse{
-		"rpm -q git fish btop": {
-			Out: "git-2.47.0-1.fc44.x86_64\npackage fish is not installed\nbtop-1.4.0-1.fc44.x86_64\n",
+		"rpm -q --whatprovides git fish btop": {
+			Out: "git-2.47.0-1.fc44.x86_64\nno package provides fish\nbtop-1.4.0-1.fc44.x86_64\n",
 			Err: errors.New("exit status 1"),
 		},
 	}}
@@ -34,6 +34,19 @@ func TestDNFPackagesOnlyInstallsMissing(t *testing.T) {
 	want := []string{"sudo dnf install -y --skip-unavailable fish"}
 	if !reflect.DeepEqual(f.Ran, want) {
 		t.Errorf("Ran = %v, want %v", f.Ran, want)
+	}
+}
+
+func TestDNFPackagesProvidedByOtherPackage(t *testing.T) {
+	// On Fedora 44 "wget" and "npm" are provided by wget2-wget and nodejs22-npm.
+	f := &runner.Fake{Responses: map[string]runner.FakeResponse{
+		"rpm -q --whatprovides wget npm": {
+			Out: "wget2-wget-2.3.0-3.fc44.x86_64\nnodejs22-npm-10.9.8-1.22.23.1.2.fc44.noarch\n",
+		},
+	}}
+	done, err := (&dnfPackagesStep{pkgs: []string{"wget", "npm"}}).Check(ctx, f)
+	if err != nil || !done {
+		t.Fatalf("Check = %v, %v; want true, nil", done, err)
 	}
 }
 
