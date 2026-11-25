@@ -233,14 +233,20 @@ func (s *dnfPackagesStep) Describe() string {
 
 func (s *dnfPackagesStep) Check(ctx context.Context, r runner.Runner) (bool, error) {
 	s.missing = s.pkgs
-	// rpm -q exits non-zero if any package is missing, so look at the output.
-	out, err := r.Query(ctx, runner.Cmd{Name: "rpm", Args: append([]string{"-q"}, s.pkgs...)})
+	// --whatprovides also resolves names that are only provided by another
+	// package (on Fedora 44 "wget" comes from wget2-wget and "npm" from
+	// nodejs22-npm); plain "rpm -q" would report those as missing on every run.
+	// rpm exits non-zero if any name is missing, so look at the output.
+	out, err := r.Query(ctx, runner.Cmd{Name: "rpm", Args: append([]string{"-q", "--whatprovides"}, s.pkgs...)})
 	if err != nil && out == "" {
 		return false, err
 	}
 	s.missing = nil
 	for _, line := range strings.Split(out, "\n") {
-		if p, ok := strings.CutPrefix(strings.TrimSpace(line), "package "); ok {
+		line = strings.TrimSpace(line)
+		if name, ok := strings.CutPrefix(line, "no package provides "); ok {
+			s.missing = append(s.missing, name)
+		} else if p, ok := strings.CutPrefix(line, "package "); ok {
 			if name, ok := strings.CutSuffix(p, " is not installed"); ok {
 				s.missing = append(s.missing, name)
 			}
