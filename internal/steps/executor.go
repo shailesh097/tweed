@@ -14,6 +14,7 @@ type Summary struct {
 	Applied, Skipped, Failed int
 }
 
+// String formats the summary for the end-of-run report.
 func (s Summary) String() string {
 	return fmt.Sprintf("%d applied, %d already done, %d failed", s.Applied, s.Skipped, s.Failed)
 }

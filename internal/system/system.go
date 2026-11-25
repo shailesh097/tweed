@@ -25,7 +25,7 @@ func ReadOSRelease() (OSRelease, error) {
 	if err != nil {
 		return OSRelease{}, err
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck // read-only file; a Close error can't affect the result
 	return ParseOSRelease(f)
 }
 

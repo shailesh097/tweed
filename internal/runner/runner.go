@@ -67,8 +67,11 @@ func NewExec(dry bool) *Exec {
 	return &Exec{Dry: dry, Stdout: os.Stdout, Stderr: os.Stderr}
 }
 
+// DryRun reports whether commands are only printed, not executed.
 func (e *Exec) DryRun() bool { return e.Dry }
 
+// Query runs c and returns its stdout. It runs even in dry-run mode, because
+// checks must be able to inspect the system.
 func (e *Exec) Query(ctx context.Context, c Cmd) (string, error) {
 	cmd := build(ctx, c)
 	var out, errb bytes.Buffer
@@ -80,6 +83,8 @@ func (e *Exec) Query(ctx context.Context, c Cmd) (string, error) {
 	return out.String(), nil
 }
 
+// Run executes c with the process's stdio attached. In dry-run mode it only
+// calls OnRun and returns nil.
 func (e *Exec) Run(ctx context.Context, c Cmd) error {
 	if e.OnRun != nil {
 		e.OnRun(c)
