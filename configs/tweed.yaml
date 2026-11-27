@@ -4,7 +4,7 @@
 #   tweed apply --profile workstation --dry-run  # preview
 #   tweed apply -m dev,apps                      # apply specific modules
 #
-# Step order inside a module: dnf_config → repos → dnf → flatpak → gsettings → commands
+# Step order inside a module: dnf_config → repos → upgrade → dnf → flatpak → gsettings → commands
 # Everything is idempotent: steps that are already done are skipped.
 # Requires Fedora 41+ (dnf5).
 
@@ -23,6 +23,7 @@ modules:
       - builtin: rpmfusion-free
       - builtin: rpmfusion-nonfree
       - builtin: flathub
+    upgrade: true   # dnf upgrade once the repos are set up (skip with --no-upgrade)
     dnf: [curl, wget, git, neovim, fzf, btop, nvtop, fastfetch, zoxide, tldr, eza, npm, rsync, unzip, make]
     commands:
       - name: create ~/Workspace

@@ -162,3 +162,66 @@ func (f *failRunner) Run(context.Context, runner.Cmd) error {
 	f.runs++
 	return errors.New("boom")
 }
+
+func TestUpgradeCheck(t *testing.T) {
+	const check = "dnf check-upgrade -q"
+	tests := []struct {
+		name     string
+		err      error
+		wantDone bool
+		wantErr  bool
+	}{
+		{"nothing to upgrade", nil, true, false},
+		{"upgrades available", runner.ExitError(100), false, false},
+		{"check failed", runner.ExitError(1), false, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := &runner.Fake{Responses: map[string]runner.FakeResponse{check: {Err: tt.err}}}
+			done, err := (&upgradeStep{}).Check(ctx, f)
+			if done != tt.wantDone || (err != nil) != tt.wantErr {
+				t.Errorf("Check = %v, %v; want done=%v, err=%v", done, err, tt.wantDone, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestUpgradeRunsAfterReposBeforePackages(t *testing.T) {
+	m := config.Module{
+		Repos:    []config.Repo{{Copr: "atim/starship"}},
+		Upgrade:  true,
+		DNF:      []string{"starship"},
+		Commands: []config.Command{{Name: "c", Run: "true"}},
+	}
+	var got []string
+	for _, st := range FromModule(m) {
+		got = append(got, st.Describe())
+	}
+	want := []string{"repo: COPR atim/starship", "upgrade: system packages", "dnf: 1 package(s)", "command: c"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("steps = %v, want %v", got, want)
+	}
+}
+
+func TestExecuteNoUpgrade(t *testing.T) {
+	cfg := &config.Config{Modules: map[string]config.Module{"m": {Upgrade: true}}}
+	var buf bytes.Buffer
+	log := &ui.Logger{Out: &buf, Err: &buf}
+	f := &runner.Fake{Responses: map[string]runner.FakeResponse{
+		"dnf check-upgrade -q": {Err: runner.ExitError(100)},
+	}}
+
+	if _, err := Execute(ctx, cfg, []string{"m"}, f, log, Options{NoUpgrade: true}); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.Ran) != 0 {
+		t.Errorf("--no-upgrade: Ran = %v, want nothing", f.Ran)
+	}
+
+	if _, err := Execute(ctx, cfg, []string{"m"}, f, log, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"sudo dnf upgrade -y --refresh"}; !reflect.DeepEqual(f.Ran, want) {
+		t.Errorf("Ran = %v, want %v", f.Ran, want)
+	}
+}

@@ -8,6 +8,7 @@ package runner
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -119,4 +120,14 @@ func build(ctx context.Context, c Cmd) *exec.Cmd {
 func Has(program string) bool {
 	_, err := exec.LookPath(program)
 	return err == nil
+}
+
+// ExitCode returns the exit status carried by err (for example from Query),
+// or -1 if err is nil or did not come from a process exit.
+func ExitCode(err error) int {
+	var e interface{ ExitCode() int }
+	if err != nil && errors.As(err, &e) {
+		return e.ExitCode()
+	}
+	return -1
 }

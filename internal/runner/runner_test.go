@@ -2,6 +2,7 @@ package runner
 
 import (
 	"context"
+	"errors"
 	"testing"
 )
 
@@ -40,5 +41,19 @@ func TestExecQuery(t *testing.T) {
 	out, err := NewExec(true).Query(context.Background(), Cmd{Name: "echo", Args: []string{"hi"}})
 	if err != nil || out != "hi\n" {
 		t.Fatalf("Query = %q, %v", out, err)
+	}
+}
+
+func TestExitCode(t *testing.T) {
+	if got := ExitCode(nil); got != -1 {
+		t.Errorf("ExitCode(nil) = %d, want -1", got)
+	}
+	if got := ExitCode(errors.New("plain")); got != -1 {
+		t.Errorf("ExitCode(plain) = %d, want -1", got)
+	}
+	// A real process exit, wrapped the way Exec.Query wraps it.
+	_, err := NewExec(false).Query(context.Background(), Cmd{Name: "sh", Args: []string{"-c", "exit 100"}})
+	if got := ExitCode(err); got != 100 {
+		t.Errorf("ExitCode(sh exit 100) = %d, want 100 (err: %v)", got, err)
 	}
 }

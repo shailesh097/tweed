@@ -22,6 +22,7 @@ func (s Summary) String() string {
 // Options controls Execute.
 type Options struct {
 	KeepGoing bool // continue after a failed step instead of stopping
+	NoUpgrade bool // leave out upgrade steps (apply --no-upgrade)
 }
 
 // Execute runs the steps of each named module in order.
@@ -33,6 +34,10 @@ func Execute(ctx context.Context, cfg *config.Config, modules []string, r runner
 		for _, st := range FromModule(cfg.Modules[name]) {
 			if err := ctx.Err(); err != nil {
 				return sum, err
+			}
+			if _, ok := st.(*upgradeStep); ok && opt.NoUpgrade {
+				log.Skip("%s (skipped: --no-upgrade)", st.Describe())
+				continue
 			}
 			done, err := st.Check(ctx, r)
 			if err != nil && !r.DryRun() {

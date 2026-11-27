@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
 // Fake is an in-memory Runner for tests. Query answers come from Responses,
@@ -18,6 +19,16 @@ type FakeResponse struct {
 	Out string
 	Err error
 }
+
+// ExitError is a fake process exit for FakeResponse.Err, so code under test
+// can inspect the status with ExitCode.
+type ExitError int
+
+// Error implements error.
+func (e ExitError) Error() string { return fmt.Sprintf("exit status %d", int(e)) }
+
+// ExitCode returns the fake exit status.
+func (e ExitError) ExitCode() int { return int(e) }
 
 // ErrNoResponse is returned for queries without a canned response.
 var ErrNoResponse = errors.New("fake: no response configured")

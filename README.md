@@ -58,6 +58,7 @@ tweed init                                    # copy the default config to ~/.co
 | `-n, --dry-run` | Show commands, change nothing |
 | `-y, --yes` | Skip the confirmation prompt |
 | `--keep-going` | Don't stop at the first failed step |
+| `--no-upgrade` | Skip `dnf upgrade` in modules with `upgrade: true` |
 | `-c, --config` | Use a specific config file |
 
 Config lookup order: `--config` → `~/.config/tweed/tweed.yaml` → built-in default.
