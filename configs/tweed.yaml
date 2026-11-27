@@ -59,7 +59,7 @@ modules:
       - schema: org.gnome.desktop.wm.preferences
         key: button-layout
         value: appmenu:minimize,maximize,close
-      - schema: org.gnome.desktop.session      # screen off after 15 min
+      - schema: org.gnome.desktop.session
         key: idle-delay
         value: "500"
       - schema: org.gnome.settings-daemon.plugins.power

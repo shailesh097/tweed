@@ -5,6 +5,8 @@ versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-27
+
 ### Added
 - `upgrade` module option: runs `dnf upgrade` after the repos are set up and before packages are installed; on by default in `base`
 - `apply --no-upgrade` to skip it
