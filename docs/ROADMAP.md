@@ -67,6 +67,7 @@ Each milestone below maps to a **GitHub milestone**; each bullet is an **issue**
 |---|---|---|
 | dnf.conf tweaks | `base.dnf_config` | ✅ |
 | RPM Fusion, Flathub | `base.repos` | ✅ |
+| `dnf update` before installing | `base.upgrade` | ✅ |
 | CLI tools (dnf) | `base.dnf` | ✅ |
 | Workspace dir, git identity | `base.commands` | ✅ |
 | fish + starship (COPR), chsh | `shell` | ✅ |

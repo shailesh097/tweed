@@ -22,11 +22,12 @@ type Config struct {
 }
 
 // Module is one unit of setup. Steps run in the order the fields are listed:
-// dnf_config → repos → dnf → flatpak → gsettings → commands.
+// dnf_config → repos → upgrade → dnf → flatpak → gsettings → commands.
 type Module struct {
 	Description string            `yaml:"description"`
 	DNFConfig   map[string]string `yaml:"dnf_config"`
 	Repos       []Repo            `yaml:"repos"`
+	Upgrade     bool              `yaml:"upgrade"` // run `dnf upgrade` after repos, before installing packages
 	DNF         []string          `yaml:"dnf"`
 	Flatpak     []string          `yaml:"flatpak"`
 	GSettings   []GSetting        `yaml:"gsettings"`

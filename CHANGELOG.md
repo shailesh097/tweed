@@ -4,6 +4,11 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 versioning: [SemVer](https://semver.org/).
 
 ## [Unreleased]
+
+### Added
+- `upgrade` module option: runs `dnf upgrade` after the repos are set up and before packages are installed; on by default in `base`
+- `apply --no-upgrade` to skip it
+
 ## [0.2.0] - 2026-11-25
 
 ### Added

@@ -38,6 +38,7 @@ Run 'tweed <command> -h' for command flags.
 Examples:
   tweed apply --profile workstation --dry-run
   tweed apply -m base -m dev
+  tweed apply -p workstation --no-upgrade
   tweed list
 `
 
@@ -132,7 +133,7 @@ func runApply(ctx context.Context, args []string, log *ui.Logger) error {
 	cfgPath := addConfigFlag(fs)
 	var profile string
 	var modules multiFlag
-	var dry, yes, keepGoing bool
+	var dry, yes, keepGoing, noUpgrade bool
 	fs.StringVar(&profile, "profile", "", "profile to apply")
 	fs.StringVar(&profile, "p", "", "shorthand for --profile")
 	fs.Var(&modules, "module", "module to apply (repeatable, comma-separated)")
@@ -142,6 +143,7 @@ func runApply(ctx context.Context, args []string, log *ui.Logger) error {
 	fs.BoolVar(&yes, "yes", false, "do not ask for confirmation")
 	fs.BoolVar(&yes, "y", false, "shorthand for --yes")
 	fs.BoolVar(&keepGoing, "keep-going", false, "continue after a failed step")
+	fs.BoolVar(&noUpgrade, "no-upgrade", false, "skip the 'dnf upgrade' of modules that set upgrade: true")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -176,7 +178,7 @@ func runApply(ctx context.Context, args []string, log *ui.Logger) error {
 
 	r := runner.NewExec(dry)
 	r.OnRun = func(c runner.Cmd) { log.Command(dry, c.String()) }
-	sum, err := steps.Execute(ctx, cfg, selected, r, log, steps.Options{KeepGoing: keepGoing})
+	sum, err := steps.Execute(ctx, cfg, selected, r, log, steps.Options{KeepGoing: keepGoing, NoUpgrade: noUpgrade})
 	if dry {
 		log.Header("summary: %d would change, %d already done", sum.Applied, sum.Skipped)
 		log.Info("dry run: nothing was changed")
@@ -206,8 +208,12 @@ func runList(args []string, out io.Writer) error {
 	for _, name := range cfg.ModuleNames() {
 		m := cfg.Modules[name]
 		fmt.Fprintf(out, "  %-20s %s\n", name, m.Description)
-		fmt.Fprintf(out, "  %-20s %d steps (dnf: %d, flatpak: %d, repos: %d, gsettings: %d, commands: %d)\n",
-			"", len(steps.FromModule(m)), len(m.DNF), len(m.Flatpak), len(m.Repos), len(m.GSettings), len(m.Commands))
+		upgrade := ""
+		if m.Upgrade {
+			upgrade = "upgrade, "
+		}
+		fmt.Fprintf(out, "  %-20s %d steps (%sdnf: %d, flatpak: %d, repos: %d, gsettings: %d, commands: %d)\n",
+			"", len(steps.FromModule(m)), upgrade, len(m.DNF), len(m.Flatpak), len(m.Repos), len(m.GSettings), len(m.Commands))
 	}
 	return nil
 }

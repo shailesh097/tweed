@@ -44,6 +44,9 @@ func FromModule(m config.Module) []Step {
 	for _, r := range m.Repos {
 		out = append(out, repoStep(r))
 	}
+	if m.Upgrade {
+		out = append(out, &upgradeStep{})
+	}
 	if len(m.DNF) > 0 {
 		out = append(out, &dnfPackagesStep{pkgs: m.DNF})
 	}
@@ -218,6 +221,34 @@ func (s *inlineRepoStep) Apply(ctx context.Context, r runner.Runner) error {
 		}
 	}
 	return r.Run(ctx, runner.Cmd{Name: "tee", Args: []string{s.file()}, Sudo: true, Stdin: b.String()})
+}
+
+// ---- system upgrade ---------------------------------------------------------
+
+// upgradeStep runs `dnf upgrade`. It sits after repos so packages from newly
+// added repos (RPM Fusion, COPR...) are upgraded too, and before dnf installs
+// so new packages are installed on an up-to-date system.
+type upgradeStep struct{}
+
+// dnf check-upgrade exits 100 when upgrades are available and 0 when not.
+const dnfUpgradesAvailable = 100
+
+func (s *upgradeStep) Describe() string { return "upgrade: system packages" }
+
+func (s *upgradeStep) Check(ctx context.Context, r runner.Runner) (bool, error) {
+	_, err := r.Query(ctx, runner.Cmd{Name: "dnf", Args: []string{"check-upgrade", "-q"}})
+	switch {
+	case err == nil:
+		return true, nil
+	case runner.ExitCode(err) == dnfUpgradesAvailable:
+		return false, nil
+	default:
+		return false, err // e.g. no network: "could not tell", so upgrade anyway
+	}
+}
+
+func (s *upgradeStep) Apply(ctx context.Context, r runner.Runner) error {
+	return r.Run(ctx, runner.Cmd{Name: "dnf", Args: []string{"upgrade", "-y", "--refresh"}, Sudo: true})
 }
 
 // ---- packages ---------------------------------------------------------------

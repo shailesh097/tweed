@@ -11,6 +11,7 @@ modules:
     description: <text shown by `tweed list`>
     dnf_config:  {<key>: "<value>"}
     repos:       [<repo>, ...]
+    upgrade:     true | false
     dnf:         [<package>, ...]
     flatpak:     [<app id>, ...]
     gsettings:   [{schema, key, value}, ...]
@@ -34,6 +35,14 @@ Each entry uses **exactly one** form:
 | `copr` | `atim/starship` | COPR repo file exists |
 | `repofile` | URL to a `.repo` file | `/etc/yum.repos.d/<filename>` exists |
 | inline | `id`, `baseurl`, optional `name`, `gpgkey` | `/etc/yum.repos.d/<id>.repo` exists |
+
+## `upgrade`
+
+`upgrade: true` runs `sudo dnf upgrade -y --refresh` after the module's repos are
+set up and before its `dnf` packages are installed, so packages from newly added
+repos are upgraded too. It counts as done when `dnf check-upgrade` reports nothing
+to upgrade. If that check fails (no network, for example) the upgrade runs anyway.
+Skip it for one run with `tweed apply --no-upgrade`. Default: `false`.
 
 ## `dnf` / `flatpak`
 
