@@ -4,8 +4,7 @@
 
 **Set up a fresh Fedora install from one config file.**
 
-tweed is the Go successor to [fedora_tweed](https://github.com/shailesh097/fedora_tweed).
-Instead of one long script, you describe *what* you want in `tweed.yaml` (packages,
+You describe *what* you want in `tweed.yaml` (packages,
 repos, Flatpaks, GNOME settings...), grouped into **modules** and **profiles**,
 and tweed works out what's missing and applies only that.
 
